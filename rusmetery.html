@@ -32,6 +32,11 @@
       </tr>
 
       <tr>
+      <td><label style="color:white">Balls D</label></td>
+      <td><input type="number" id="BALLS_D"></td>
+      </tr>
+
+      <tr>
       <td></td>
       <td><input type="button" id="OK" value="OK"></td>
       </tr>
@@ -91,12 +96,15 @@
 <body>
     <canvas id="canvas" width="800" height="450" style="border:1px solid #000000"></canvas>
     <script>
-        // init
-        if( !sessionStorage.tableWidth ) sessionStorage.tableWidth = 42;
-        if( !sessionStorage.tableHeight ) sessionStorage.tableHeight = 12;
-
+        // init first time
+        if( !sessionStorage.tableWidth ) sessionStorage.tableWidth = 3500;
+        if( !sessionStorage.tableHeight ) sessionStorage.tableHeight = 1750;
+        if( !sessionStorage.ballsD ) sessionStorage.ballsD = 68;
+ 
+        // load older settings
         document.getElementById('TABLE_WIDTH').value = sessionStorage.tableWidth;
         document.getElementById('TABLE_HEIGHT').value = sessionStorage.tableHeight;
+        document.getElementById('BALLS_D').value = sessionStorage.ballsD;
 
         const TSIZE_DICT =
         {
@@ -120,8 +128,12 @@
 
         document.getElementById('OK').addEventListener("click", ()=>
         {
+          // save all settings
           sessionStorage.tableWidth = document.getElementById('TABLE_WIDTH').value;
           sessionStorage.tableHeight = document.getElementById('TABLE_HEIGHT').value;
+          sessionStorage.ballsD = document.getElementById('BALLS_D').value;
+
+          // and repaint with new settings
           repaint();
         });
 
