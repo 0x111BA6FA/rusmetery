@@ -269,9 +269,35 @@
             canvas.add(doubleRadCircle);
             glist.push(doubleRadCircle);
 
-            for( const b of RBALLS )
+            for( let rb of RBALLS )
             {
-              console.log(b.getCenterPoint());
+              var rbcp = rb.getCenterPoint();
+              // to ball null coords
+              var rbx = rbcp.x-bcp.x;
+              var rby = rbcp.y-bcp.y;
+              var sqcdist = rbx*rbx + rby*rby;
+              var cdist = Math.sqrt(sqcdist);
+              var a = Math.asin(BD/2/cdist);
+              var b = Math.PI - a;
+              var px = BD/2*Math.sin(a);
+              var py = BD/2*Math.cos(a);
+              // to canvas coords
+              console.log(px, py, a);
+              px += bcp.x;
+              py += bcp.y;
+
+              var point = new fabric.Line([rbcp.x, rbcp.y, px, py],
+              {
+                strokeWidrth:3,
+                stroke:'black',
+                evented:false,
+              });
+              canvas.add(point);
+              glist.push(point);
+
+              //console.log(b.getCenterPoint());
+              //console.log(rbx, rby, px, py);
+              break;
             }
             
             /*var point = new fabric.Line([ball.left, ball.top, ball.left+EPS, ball.top+EPS],
@@ -285,7 +311,7 @@
 
             //console.log(ball);
             //console.log(ball.top);
-            console.log(bcp.x, bcp.y);
+            //console.log(bcp.x, bcp.y);
           }});
         }
         
