@@ -169,7 +169,6 @@
             [3/4*TW,0,3/4*TW,TH,5],
             [1/4*TW,0,1/4*TW,TH,2],
             [1/2*TW,0,1/2*TW,TH,1],
-
             [0,TH/2,TW,TH/2,1],
           ]
           for([x1,y1,x2,y2,sw] of LLIST)
@@ -186,6 +185,9 @@
           // draw pockets          
           const PLIST = [
             [0,0,45],
+            [TW/2-PD/2,-PD/2-PD/4,0],
+            [TW/2-PD/2,TH-PD/2+PD/4,0],
+            [0,TH,45],
           ];
           
           for([x,y,a] of PLIST)
