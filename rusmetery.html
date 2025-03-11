@@ -103,6 +103,7 @@
 
         const degreesToRads = deg => (deg * Math.PI) / 180.0;
         const radsToDegrees = rad => (rad * 180.0) / Math.PI;
+        const EPS =  14e-88;
 
         // init first time
         if( !sessionStorage.tableWidth ) sessionStorage.tableWidth = 3500;
@@ -156,6 +157,7 @@
 
           const TW = parseInt(sessionStorage.tableWidth);
           const TH = parseInt(sessionStorage.tableHeight);
+          const BD = parseInt(sessionStorage.ballsD);
           const PD = parseInt(sessionStorage.pocketD);
 
           document.getElementById('canvas').width = TW;
@@ -194,7 +196,7 @@
           {
             canvas.add(new fabric.Rect(
             {
-              left:x,//Math.sin(degreesToRads(a))*PD,
+              left:x,
               top:y-Math.sin(degreesToRads(a))*PD,
               width:PD,
               height:PD,
@@ -203,13 +205,42 @@
             }));
           }
           
-          
 
-
-          var ball = new fabric.Circle({ radius: sessionStorage.ballsD/2, fill: '#f55', top: 50, left: 50 })
+          var ball = new fabric.Circle({ radius: BD/2, fill: 'white', top: 50, left: 50 })
           ball.hasControls = ball.hasBorders = false;
-
           canvas.add(ball);
+
+          var glist = [];
+          ball.on({'moving':()=>
+          {
+            for( g of glist) canvas.remove(g);
+            glist = [];
+
+            var doubleRadCircle = new fabric.Circle(
+            {
+              radius: BD,
+              fill: 'rgba(0,0,0,0)',
+              stroke: 'black',
+              strokeWidth: 1,
+              top:ball.top-BD/2,
+              left:ball.left-BD/2,
+              evented:false,
+            });
+            canvas.add(doubleRadCircle);
+            glist.push(doubleRadCircle);
+            
+            /*var point = new fabric.Line([ball.left, ball.top, ball.left+EPS, ball.top+EPS],
+            {
+              strokeWidrth:3,
+              stroke:'black',
+              evented:false,
+            });
+            glist.push(point);
+            canvas.add(point);*/
+
+            //console.log(ball);
+            //console.log(ball.top);
+          }});
         }
         
         /*canvas.selectionColor = 'rgba(0,255,0,0.3)';
