@@ -10,6 +10,17 @@
       <!--<a href="#news">News</a>
       <a href="#contact">Contact</a>
       <a href="#about">About</a>-->
+
+      <tr>
+      <td></td>
+      <td id="FBTNS">
+        <input type="button" id="9FBTN" value="9F">
+        <input type="button" id="10FBTN" value="10F">
+        <input type="button" id="11FBTN" value="11F">
+        <input type="button" id="12FBTN" value="12F">
+      </td>
+      </tr>
+
       <tr>
       <td><label style="color:white">Table Width</label></td>
       <td><input type="number" id="TABLE_WIDTH"></td>
@@ -87,19 +98,51 @@
         document.getElementById('TABLE_WIDTH').value = sessionStorage.tableWidth;
         document.getElementById('TABLE_HEIGHT').value = sessionStorage.tableHeight;
 
+        const TSIZE_DICT =
+        {
+          '9F':[2540, 1270],
+          '10F':[2840, 1420],
+          '11F':[3200, 1600],
+          '12F':[3500, 1750],
+        };
+
+        document.getElementById('FBTNS').addEventListener('click', (e) => 
+        {
+          if( e.target.value in TSIZE_DICT )
+          {
+            var w, h;
+            [w,h] = TSIZE_DICT[e.target.value]
+            document.getElementById('TABLE_WIDTH').value = w;
+            document.getElementById('TABLE_HEIGHT').value = h;
+          }
+        });
+
+
         document.getElementById('OK').addEventListener("click", ()=>
         {
           sessionStorage.tableWidth = document.getElementById('TABLE_WIDTH').value;
-          sessionStorage.tableHeight = document.getElementById('TABLE_HEIGHT').value
+          sessionStorage.tableHeight = document.getElementById('TABLE_HEIGHT').value;
+          repaint();
         });
 
-        var canvas = new fabric.Canvas('canvas');
-        canvas.selection = false;
+        var canvas;
 
-        var ball = new fabric.Circle({ radius: 30, fill: '#f55', top: 0, left: 0 })
-        ball.hasControls = ball.hasBorders = false;
+        function repaint()
+        {
+          if( canvas ) canvas.dispose();
 
-        canvas.add(ball);
+          document.getElementById('canvas').width = sessionStorage.tableWidth;
+          document.getElementById('canvas').height = sessionStorage.tableHeight;
+          
+          canvas = new fabric.Canvas('canvas');
+          canvas.selection = false;
+
+          var ball = new fabric.Circle({ radius: 30, fill: '#f55', top: 0, left: 0 })
+          ball.hasControls = ball.hasBorders = false;
+
+          canvas.add(ball);
+        }
+        
         /*canvas.selectionColor = 'rgba(0,255,0,0.3)';
         canvas.selectionBorderColor = 'red';
         canvas.selectionLineWidth = 5;*/
