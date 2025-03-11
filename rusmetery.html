@@ -19,6 +19,11 @@
       <td><label style="color:white">Table Height</label></td>
       <td><input type="number" id="TABLE_HEIGHT"></td>
       </tr>
+
+      <tr>
+      <td></td>
+      <td><input type="button" id="OK" value="OK"></td>
+      </tr>
     
     </table></div>
     <!-- "Hamburger menu" / "Bar icon" to toggle the navigation links -->
@@ -76,8 +81,17 @@
     <canvas id="canvas" width="800" height="450" style="border:1px solid #000000"></canvas>
     <script>
         // init
-        document.getElementById('TABLE_WIDTH').value = 42
-        document.getElementById('TABLE_HEIGHT').value = 12
+        if( !sessionStorage.tableWidth ) sessionStorage.tableWidth = 42;
+        if( !sessionStorage.tableHeight ) sessionStorage.tableHeight = 12;
+
+        document.getElementById('TABLE_WIDTH').value = sessionStorage.tableWidth;
+        document.getElementById('TABLE_HEIGHT').value = sessionStorage.tableHeight;
+
+        document.getElementById('OK').addEventListener("click", ()=>
+        {
+          sessionStorage.tableWidth = document.getElementById('TABLE_WIDTH').value;
+          sessionStorage.tableHeight = document.getElementById('TABLE_HEIGHT').value
+        });
 
         var canvas = new fabric.Canvas('canvas');
         canvas.selection = false;
