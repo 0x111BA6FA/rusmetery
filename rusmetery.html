@@ -40,9 +40,14 @@
       </tr>
 
       <tr>
-        <td><label style="color:white">Pocket D</label></td>
-        <td><input type="number" id="POCKET_D"></td>
-        </tr>
+      <td><label style="color:white">Pocket D</label></td>
+      <td><input type="number" id="POCKET_D"></td>
+      </tr>
+
+      <tr>
+      <td><label style="color:white">Balls Angle</label></td>
+      <td><input type="number" id="BALLS_ANGLE"></td>
+      </tr>
 
       <tr>
       <td></td>
@@ -110,12 +115,14 @@
         if( !sessionStorage.tableHeight ) sessionStorage.tableHeight = 1750;
         if( !sessionStorage.ballsD ) sessionStorage.ballsD = 68;
         if( !sessionStorage.pocketD ) sessionStorage.pocketD = 72;
+        if( !sessionStorage.ballsAngle ) sessionStorage.ballsAngle = 140;
  
         // load older settings
         document.getElementById('TABLE_WIDTH').value = sessionStorage.tableWidth;
         document.getElementById('TABLE_HEIGHT').value = sessionStorage.tableHeight;
         document.getElementById('BALLS_D').value = sessionStorage.ballsD;
         document.getElementById('POCKET_D').value = sessionStorage.pocketD;
+        document.getElementById('BALLS_ANGLE').value = sessionStorage.ballsAngle;
 
         const TSIZE_DICT =
         {
@@ -144,6 +151,7 @@
           sessionStorage.tableHeight = document.getElementById('TABLE_HEIGHT').value;
           sessionStorage.ballsD = document.getElementById('BALLS_D').value;
           sessionStorage.pocketD = document.getElementById('POCKET_D').value;
+          sessionStorage.ballsAngle = document.getElementById('BALLS_ANGLE').value;
 
           // and repaint with new settings
           repaint();
@@ -159,6 +167,7 @@
           const TH = parseInt(sessionStorage.tableHeight);
           const BD = parseInt(sessionStorage.ballsD);
           const PD = parseInt(sessionStorage.pocketD);
+          const BA = parseInt(sessionStorage.ballsAngle);
 
           document.getElementById('canvas').width = TW;
           document.getElementById('canvas').height = TH;
@@ -205,16 +214,47 @@
             }));
           }
           
-
+          // moving ball
           var ball = new fabric.Circle({ radius: BD/2, fill: 'white', top: 50, left: 50 })
           ball.hasControls = ball.hasBorders = false;
           canvas.add(ball);
+
+          // red balls
+          var RBALLS = [];
+          const bx = 3/4*TW-BD/2;
+          for( let by1 = TH/2-BD/2, by2 = by1; by1 > 0; by1 -= BD, by2 += BD )
+          {
+            var b = new fabric.Circle(
+            {
+              radius:BD/2,
+              fill:'red',
+              top:by1,
+              left:bx, 
+            });
+            canvas.add(b);
+            RBALLS.push(b);
+
+            if( by1 != by2 )
+            {
+              b = new fabric.Circle(
+              {
+                radius:BD/2,
+                fill:'red',
+                top:by2,
+                left:bx, 
+              });
+              canvas.add(b);
+              RBALLS.push(b);
+            }
+          }
 
           var glist = [];
           ball.on({'moving':()=>
           {
             for( g of glist) canvas.remove(g);
             glist = [];
+
+            const bcp = ball.getCenterPoint();
 
             var doubleRadCircle = new fabric.Circle(
             {
@@ -228,6 +268,11 @@
             });
             canvas.add(doubleRadCircle);
             glist.push(doubleRadCircle);
+
+            for( const b of RBALLS )
+            {
+              console.log(b.getCenterPoint());
+            }
             
             /*var point = new fabric.Line([ball.left, ball.top, ball.left+EPS, ball.top+EPS],
             {
@@ -240,6 +285,7 @@
 
             //console.log(ball);
             //console.log(ball.top);
+            console.log(bcp.x, bcp.y);
           }});
         }
         
