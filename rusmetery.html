@@ -144,6 +144,16 @@
           return ret;
         }
 
+        function rotate(cx, cy, x, y, angle)
+        {
+          var radians = (Math.PI / 180) * angle,
+              cos = Math.cos(radians),
+              sin = Math.sin(radians),
+              nx = (cos * (x - cx)) + (sin * (y - cy)) + cx,
+              ny = (cos * (y - cy)) - (sin * (x - cx)) + cy;
+          return [nx, ny];
+        }
+        
         // init first time
         if( !sessionStorage.tableWidth ) sessionStorage.tableWidth = 3500;
         if( !sessionStorage.tableHeight ) sessionStorage.tableHeight = 1750;
@@ -254,7 +264,7 @@
           canvas.add(ball);
 
           // red ball
-          var rball = new fabric.Circle({ radius: BD/2, fill: 'red', top: TH/2-BD/2, left: TW*3/4-BD/2 })
+          var rball = new fabric.Circle({ radius: BD/2, fill: 'red', top: TH/2-BD/2, left: TW/4*3-BD/2 })
           rball.hasControls = rball.hasBorders = false;
           canvas.add(rball);
 
@@ -283,6 +293,8 @@
             canvas.add(doubleRadCircle);
             glist.push(doubleRadCircle);
 
+            // TODO pocket-bcp and rbcp lines to better control position
+
             var rbcp = rball.getCenterPoint();
             // to ball null coords
             var rbx = rbcp.x-bcp.x;
@@ -290,54 +302,101 @@
             var sqcdist = rbx*rbx + rby*rby;
             var cdist = Math.sqrt(sqcdist);
             var a = Math.asin(BD/2/cdist);
+            var rota = Math.asin(rby/rbx);
             // TODO? rotate coords and then back
+            
+            //console.log(1,rbx,rby, cdist);
+            [rbx,rby] = rotate(0,0,rbx,rby,radsToDegrees(rota));
+            //console.log(2,rbx,rby);
+
             //var b = Math.PI - a;
             //var c = Math.atan2(rby,rbx);
             //var px = BD/2*Math.sin(c+b);
             //var py = BD/2*Math.cos(c+b);
             var px = BD/2*Math.sin(a);
-            var py = BD/2*Math.cos(a);
-            var py2 = -py;
+            px2 = px;
+            py = BD/2*Math.cos(a);
+            py2 = -py;
+
+            /*{
+              [dpx1, dpy1] = rotate(0,0,px,py,-radsToDegrees(rota));
+              [dpx2, dpy2] = rotate(0,0,px2,py2,-radsToDegrees(rota));
+              dpx1 += bcp.x;
+              dpx2 += bcp.x;
+              dpy1 += bcp.y;
+              dpy2 += bcp.y;
+              debug_line = new fabric.Line([0, 0, dpx1, dpy1],
+              {
+                strokeWidrth:3,
+                stroke:'black',
+              });
+              canvas.add(debug_line);
+              glist.push(debug_line);
+
+              debug_line = new fabric.Line([0, 0, dpx2, dpy2],
+              {
+                strokeWidrth:3,
+                stroke:'black',
+              });
+              canvas.add(debug_line);
+              glist.push(debug_line);
+            }*/
+
+
+            //console.log('before', px, py, BD/2);
+
+            // rotate back
+            [px,py] = rotate(0,0,px,py,-radsToDegrees(rota));
+            [px2,py2] = rotate(0,0,px2,py2,-radsToDegrees(rota));
+
             // to canvas coords
-            //console.log(px, py, a,b,c);
+            //console.log(px, py);
+            //console.log(px2, py2);
             //console.log(c)
             px += bcp.x;
+            px2 += bcp.x;
             py += bcp.y;
             py2 += bcp.y;
 
             // px, py, py2 - coords of two tangets to white ball
 
+            /*{
+              debug_line = new fabric.Line([0, 0, px, py],
+              {
+                strokeWidrth:3,
+                stroke:'black',
+              });
+              canvas.add(debug_line);
+              glist.push(debug_line);
+
+              debug_line = new fabric.Line([0, 0, px2, py2],
+              {
+                strokeWidrth:3,
+                stroke:'black',
+              });
+              canvas.add(debug_line);
+              glist.push(debug_line);
+            }*/
+
             //console.log(px, py)
 
             // to rball coords
             px -= rbcp.x;
+            px2 -= rbcp.x;
             py -= rbcp.y;
             py2 -= rbcp.y;
 
             //console.log(px, py)
-
-            // hz pohui
-            if( px >= 0 )
-            {
-              k1 = Math.atan2(py,px);
-              k2 = Math.atan2(py2,px);
-            }
-            else
-            {
-              k1 = Math.atan2(-py,-px);
-              k2 = Math.atan2(-py2,-px);
-            }
-
             //console.log(k1,k2)
 
             // longer x out of canvas
-            x1 = -2*TW;
-            x2 = 2*TW;
-            y11 = k1*x1;
-            y12 = k1*x2;
+            x1 = -TW;
+            x2 = TW;
+            y11 = py/px*x1;
+            y12 = py/px*x2;
 
-            y21 = k2*x1;
-            y22 = k2*x2;
+            y21 = py2/px2*x1;
+            y22 = py2/px2*x2;
 
             // to canvas coords
             x1 += rbcp.x;
@@ -347,8 +406,27 @@
             y21 += rbcp.y;
             y22 += rbcp.y;
             px += rbcp.x;
+            px2 += rbcp.x;
             py += rbcp.y;
             py2 += rbcp.y;
+
+            /*{
+              debug_line = new fabric.Line([0, 0, px, py],
+              {
+                strokeWidrth:3,
+                stroke:'black',
+              });
+              canvas.add(debug_line);
+              glist.push(debug_line);
+
+              debug_line = new fabric.Line([0, 0, px2, py2],
+              {
+                strokeWidrth:3,
+                stroke:'black',
+              });
+              canvas.add(debug_line);
+              glist.push(debug_line);
+            }*/
 
 
             // two tangent lines
@@ -450,6 +528,8 @@
             //console.log(ball.top);
             //console.log(bcp.x, bcp.y);
           };
+
+          update_lines();
         }
         
         /*canvas.selectionColor = 'rgba(0,255,0,0.3)';
