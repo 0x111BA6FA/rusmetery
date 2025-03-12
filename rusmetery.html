@@ -110,6 +110,40 @@
         const radsToDegrees = rad => (rad * 180.0) / Math.PI;
         const EPS =  14e-88;
 
+        function inteceptCircleLineSeg(circle, line)
+        {
+          var a, b, c, d, u1, u2, ret, retP1, retP2, v1, v2;
+          v1 = {};
+          v2 = {};
+          v1.x = line.p2.x - line.p1.x;
+          v1.y = line.p2.y - line.p1.y;
+          v2.x = line.p1.x - circle.center.x;
+          v2.y = line.p1.y - circle.center.y;
+          b = (v1.x * v2.x + v1.y * v2.y);
+          c = 2 * (v1.x * v1.x + v1.y * v1.y);
+          b *= -2;
+          d = Math.sqrt(b * b - 2 * c * (v2.x * v2.x + v2.y * v2.y - circle.radius * circle.radius));
+          if(isNaN(d)){ // no intercept
+              return [];
+          }
+          u1 = (b - d) / c;  // these represent the unit distance of point one and two on the line
+          u2 = (b + d) / c;    
+          retP1 = {};   // return points
+          retP2 = {}  
+          ret = []; // return array
+          if(u1 <= 1 && u1 >= 0){  // add point if on the line segment
+              retP1.x = line.p1.x + v1.x * u1;
+              retP1.y = line.p1.y + v1.y * u1;
+              ret[0] = retP1;
+          }
+          if(u2 <= 1 && u2 >= 0){  // second add point if on the line segment
+              retP2.x = line.p1.x + v1.x * u2;
+              retP2.y = line.p1.y + v1.y * u2;
+              ret[ret.length] = retP2;
+          }       
+          return ret;
+        }
+
         // init first time
         if( !sessionStorage.tableWidth ) sessionStorage.tableWidth = 3500;
         if( !sessionStorage.tableHeight ) sessionStorage.tableHeight = 1750;
@@ -273,14 +307,14 @@
 
             // px, py, py2 - coords of two tangets to white ball
 
-            console.log(px, py)
+            //console.log(px, py)
 
             // to rball coords
             px -= rbcp.x;
             py -= rbcp.y;
             py2 -= rbcp.y;
 
-            console.log(px, py)
+            //console.log(px, py)
 
             // hz pohui
             if( px >= 0 )
@@ -294,8 +328,9 @@
               k2 = Math.atan2(-py2,-px);
             }
 
-            console.log(k1,k2)
+            //console.log(k1,k2)
 
+            // TODO? longer x out of canvas?
             x1 = -3/4*TW;
             x2 = 1/4*TW;
             y11 = k1*x1;
@@ -312,7 +347,11 @@
             y21 += rbcp.y;
             y22 += rbcp.y;
 
-            // calc
+            //var res = inteceptCircleLineSeg({radius : 500, center : point(1000,1000)},{p1 : point(500,500),p2 : point(2000,1000)});
+            var res = inteceptCircleLineSeg({radius : BD, center : {x:bcp.x,y:bcp.y}},{p1 : {x:x1,y:y11},p2 : {x:x2,y:y12}});
+            console.log(res);
+
+
 
             //var sline = new fabric.Line([rbcp.x, rbcp.y, px, py],
             var sline = new fabric.Line([x1, y11, x2, y12],
