@@ -256,6 +256,7 @@
             var sqcdist = rbx*rbx + rby*rby;
             var cdist = Math.sqrt(sqcdist);
             var a = Math.asin(BD/2/cdist);
+            // TODO? rotate coords and then back
             //var b = Math.PI - a;
             //var c = Math.atan2(rby,rbx);
             //var px = BD/2*Math.sin(c+b);
@@ -270,21 +271,66 @@
             py += bcp.y;
             py2 += bcp.y;
 
-            var sline = new fabric.Line([rbcp.x, rbcp.y, px, py],
+            // px, py, py2 - coords of two tangets to white ball
+
+            console.log(px, py)
+
+            // to rball coords
+            px -= rbcp.x;
+            py -= rbcp.y;
+            py2 -= rbcp.y;
+
+            console.log(px, py)
+
+            // hz pohui
+            if( px >= 0 )
+            {
+              k1 = Math.atan2(py,px);
+              k2 = Math.atan2(py2,px);
+            }
+            else
+            {
+              k1 = Math.atan2(-py,-px);
+              k2 = Math.atan2(-py2,-px);
+            }
+
+            console.log(k1,k2)
+
+            x1 = -3/4*TW;
+            x2 = 1/4*TW;
+            y11 = k1*x1;
+            y12 = k1*x2;
+
+            y21 = k2*x1;
+            y22 = k2*x2;
+
+            // to canvas coords
+            x1 += rbcp.x;
+            x2 += rbcp.x;
+            y11 += rbcp.y;
+            y12 += rbcp.y;
+            y21 += rbcp.y;
+            y22 += rbcp.y;
+
+            // calc
+
+            //var sline = new fabric.Line([rbcp.x, rbcp.y, px, py],
+            var sline = new fabric.Line([x1, y11, x2, y12],
             {
               strokeWidrth:3,
               stroke:'black',
-              //evented:false,
+              evented:false,
               zIndex:10,
             });
             canvas.add(sline);
             glist.push(sline);
 
-            sline = new fabric.Line([rbcp.x, rbcp.y, px, py2],
+            //sline = new fabric.Line([rbcp.x, rbcp.y, px, py2],
+            sline = new fabric.Line([x1, y21, x2, y22],
             {
               strokeWidrth:3,
               stroke:'black',
-              //evented:false,
+              evented:false,
               zIndex:10,
             });
             canvas.add(sline);
