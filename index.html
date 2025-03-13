@@ -25,8 +25,8 @@
       </tr>
 
       <tr>
-      <td><label style="color:white">Table Width</label></td>
-      <td><input type="number" id="TABLE_WIDTH"></td>
+      <td><label style="color:white">FACTOR</label></td>
+      <td><input type="number" id="FACTOR"></td>
       </tr>
       
       <tr>
@@ -103,12 +103,11 @@
 </head>
 
 <body>
-    <canvas id="canvas" width="800" height="450" style="border:1px solid #000000"></canvas>
+    <canvas id="canvas" style="border:1px solid #000000"></canvas>
     <script>
 
         const degreesToRads = deg => (deg * Math.PI) / 180.0;
         const radsToDegrees = rad => (rad * 180.0) / Math.PI;
-        const EPS =  14e-88;
 
         function inteceptCircleLineSeg(circle, line)
         {
@@ -155,14 +154,14 @@
         }
         
         // init first time
-        if( !sessionStorage.tableWidth ) sessionStorage.tableWidth = 3500;
-        if( !sessionStorage.tableHeight ) sessionStorage.tableHeight = 1750;
-        if( !sessionStorage.ballsD ) sessionStorage.ballsD = 68;
-        if( !sessionStorage.pocketD ) sessionStorage.pocketD = 72;
+        if( !sessionStorage.factor ) sessionStorage.factor = 2;
+        if( !sessionStorage.tableHeight ) sessionStorage.tableHeight = 175;
+        if( !sessionStorage.ballsD ) sessionStorage.ballsD = 6.8;
+        if( !sessionStorage.pocketD ) sessionStorage.pocketD = 7.2;
         if( !sessionStorage.ballsAngle ) sessionStorage.ballsAngle = 145;
  
         // load older settings
-        document.getElementById('TABLE_WIDTH').value = sessionStorage.tableWidth;
+        document.getElementById('FACTOR').value = sessionStorage.factor;
         document.getElementById('TABLE_HEIGHT').value = sessionStorage.tableHeight;
         document.getElementById('BALLS_D').value = sessionStorage.ballsD;
         document.getElementById('POCKET_D').value = sessionStorage.pocketD;
@@ -170,28 +169,22 @@
 
         const TSIZE_DICT =
         {
-          '9F':[2540, 1270],
-          '10F':[2840, 1420],
-          '11F':[3200, 1600],
-          '12F':[3500, 1750],
+          '9F':127,
+          '10F':142,
+          '11F':160,
+          '12F':175,
         };
 
         document.getElementById('FBTNS').addEventListener('click', (e) => 
         {
-          if( e.target.value in TSIZE_DICT )
-          {
-            var w, h;
-            [w,h] = TSIZE_DICT[e.target.value]
-            document.getElementById('TABLE_WIDTH').value = w;
-            document.getElementById('TABLE_HEIGHT').value = h;
-          }
+          if( e.target.value in TSIZE_DICT ) document.getElementById('TABLE_HEIGHT').value = TSIZE_DICT[e.target.value];
         });
 
 
         document.getElementById('OK').addEventListener("click", ()=>
         {
           // save all settings
-          sessionStorage.tableWidth = document.getElementById('TABLE_WIDTH').value;
+          sessionStorage.factor = document.getElementById('FACTOR').value;
           sessionStorage.tableHeight = document.getElementById('TABLE_HEIGHT').value;
           sessionStorage.ballsD = document.getElementById('BALLS_D').value;
           sessionStorage.pocketD = document.getElementById('POCKET_D').value;
@@ -203,28 +196,55 @@
 
         var canvas;
 
+        (function () {
+          var defaultOnTouchStartHandler = fabric.Canvas.prototype._onTouchStart;
+          Object.assign(fabric.Canvas.prototype, {
+            _onTouchStart: function (e) {
+              var target = this.findTarget(e);
+              if (this.allowTouchScrolling && !target && !this.isDrawingMode) {
+                return;
+              }
+              defaultOnTouchStartHandler.call(this, e);
+            }
+          });
+        })();
+
         function repaint()
         {
           if( canvas ) canvas.dispose();
 
-          const TW = parseInt(sessionStorage.tableWidth);
-          const TH = parseInt(sessionStorage.tableHeight);
-          const BD = parseInt(sessionStorage.ballsD);
-          const PD = parseInt(sessionStorage.pocketD);
+          const F = parseInt(sessionStorage.factor);
+          const TH = parseFloat(sessionStorage.tableHeight)*F;
+          const TW = TH*2;
+          const BD = parseFloat(sessionStorage.ballsD)*F;
+          const PD = parseFloat(sessionStorage.pocketD)*F;
           const BA = degreesToRads(parseInt(sessionStorage.ballsAngle));
 
           document.getElementById('canvas').width = TW;
           document.getElementById('canvas').height = TH;
           
-          canvas = new fabric.Canvas('canvas', {backgroundColor: '#04AA6D'});
-          canvas.selection = false;
+          canvas = new fabric.Canvas('canvas',
+          {
+            backgroundColor: '#04AA6D',
+            selection: false,
+            //allowTouchScrolling: true,
+          });
 
           // draw lines
           const LLIST = [
-            [3/4*TW,0,3/4*TW,TH,5],
-            [1/4*TW,0,1/4*TW,TH,2],
-            [1/2*TW,0,1/2*TW,TH,2],
-            [0,TH/2,TW,TH/2,2],
+            [3/4*TW,0,3/4*TW,TH,3],
+
+            [1/4*TW,0,1/4*TW,TH,1],
+            [1/2*TW,0,1/2*TW,TH,1],
+            [0,TH/2,TW,TH/2,1],
+
+            [1/8*TW,0,1/8*TW,TH,0.3],
+            [3/8*TW,0,3/8*TW,TH,0.3],
+            [5/8*TW,0,5/8*TW,TH,0.3],
+            [7/8*TW,0,7/8*TW,TH,0.3],
+
+            [0,TH/4,TW,TH/4,0.3],
+            [0,TH*3/4,TW,TH*3/4,0.3],
           ]
           for([x1,y1,x2,y2,sw] of LLIST)
           {
@@ -260,12 +280,28 @@
 
           
           // white ball
-          var ball = new fabric.Circle({ radius: BD/2, fill: 'white', top: TH/2-BD/2, left: TW/4-BD/2, strokeWidth:0 })
+          var ball = new fabric.Circle(
+          {
+            radius: BD/2,
+            fill: 'white',
+            top: TH/2-BD/2,
+            left: TW/4-BD/2,
+            strokeWidth:0,
+            padding:TW/4,
+          });
           ball.hasControls = ball.hasBorders = false;
           canvas.add(ball);
 
           // red ball
-          var rball = new fabric.Circle({ radius: BD/2, fill: 'red', top: TH/2-BD/2, left: TW/4*3-BD/2, strokeWidth:0 })
+          var rball = new fabric.Circle(
+          {
+            radius: BD/2,
+            fill: 'red',
+            top: TH/2-BD/2,
+            left: TW/4*3-BD/2,
+            strokeWidth:0,
+            padding: TW/4,
+          });
           rball.hasControls = rball.hasBorders = false;
           canvas.add(rball);
 
@@ -304,6 +340,7 @@
               {
                 stroke:'blue',
                 evented:false,
+                strokeWidth:0.3,
               });
               canvas.add(l);
               glist.push(l);
@@ -312,6 +349,7 @@
               {
                 stroke:'blue',
                 evented:false,
+                strokeWidth:0.3,
               });
               canvas.add(l);
               glist.push(l);
@@ -321,6 +359,7 @@
               {
                 stroke:'blue',
                 evented:false,
+                strokeWidth:0.3,
               });
               canvas.add(l);
               glist.push(l);
@@ -329,6 +368,7 @@
               {
                 stroke:'blue',
                 evented:false,
+                strokeWidth:0.3,
               });
               canvas.add(l);
               glist.push(l);
@@ -342,12 +382,13 @@
               else [mx, my, label] = [TW*3/4, TH/2, 'H'];
 
               var text = new fabric.Text(
-                  'X: '+Math.floor(bcp.x-mx)+' (' + ((bcp.x-mx)/BD).toFixed(1) + ')' +
-                  '\nY: '+Math.floor(bcp.y-my)+' (' + ((bcp.y-my)/BD).toFixed(1) + ')',
+                  'X: '+((bcp.x-mx)/F).toFixed(1)+' (' + ((bcp.x-mx)/BD).toFixed(1) + ')' +
+                  '\nY: '+((bcp.y-my)/F).toFixed(1)+' (' + ((bcp.y-my)/BD).toFixed(1) + ')',
               {
-                left: bcp.x+50,
-                top: bcp.y-50,
+                left: bcp.x+BD,
+                top: bcp.y-BD,
                 evented:false,
+                fontSize:BD*2,
               });
               canvas.add(text);
               glist.push(text);
@@ -357,12 +398,13 @@
               else [mx, my, label] = [TW*3/4, TH/2, 'H'];
 
               text = new fabric.Text(
-                  'X: '+Math.floor(rbcp.x-mx)+' (' + ((rbcp.x-mx)/BD).toFixed(1) + ')' +
-                  '\nY: '+Math.floor(rbcp.y-my)+' (' + ((rbcp.y-my)/BD).toFixed(1) + ')',
+                  'X: '+((rbcp.x-mx)/2).toFixed(1)+' (' + ((rbcp.x-mx)/BD).toFixed(1) + ')' +
+                  '\nY: '+((rbcp.y-my)/F).toFixed(1)+' (' + ((rbcp.y-my)/BD).toFixed(1) + ')',
               {
-                left: rbcp.x+50,
-                top: rbcp.y-50,
+                left: rbcp.x+BD,
+                top: rbcp.y-BD,
                 evented:false,
+                fontSize:BD*2,
               });
               canvas.add(text);
               glist.push(text);
@@ -446,6 +488,7 @@
             {
               stroke:'black',
               evented:false,
+              strokeWidth:0.3,
             });
             canvas.add(sline);
             glist.push(sline);
@@ -454,6 +497,7 @@
             {
               stroke:'black',
               evented:false,
+              strokeWidth:0.3,
             });
             canvas.add(sline);
             glist.push(sline);
