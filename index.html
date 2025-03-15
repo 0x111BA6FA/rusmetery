@@ -395,12 +395,13 @@
               }
 
               [mx, my, label] = origination_point(bcp);
+              to = (bcp.y > TH*3/4)? 5*BD : BD;
               var text = new fabric.Text(
                   'X: '+((bcp.x-mx)/F).toFixed(1)+' (' + ((bcp.x-mx)/BD).toFixed(1) + ')' +
                   '\nY: '+((bcp.y-my)/F).toFixed(1)+' (' + ((bcp.y-my)/BD).toFixed(1) + ')',
               {
                 left: bcp.x+BD,
-                top: bcp.y-BD,
+                top: bcp.y-to,
                 evented:false,
                 fontSize:BD*2,
               });
@@ -408,12 +409,13 @@
               glist.push(text);
 
               [mx, my, label] = origination_point(rbcp);
+              to = (rbcp.y > TH*3/4)? 5*BD : BD;
               text = new fabric.Text(
                   'X: '+((rbcp.x-mx)/2).toFixed(1)+' (' + ((rbcp.x-mx)/BD).toFixed(1) + ')' +
                   '\nY: '+((rbcp.y-my)/F).toFixed(1)+' (' + ((rbcp.y-my)/BD).toFixed(1) + ')',
               {
                 left: rbcp.x+BD,
-                top: rbcp.y-BD,
+                top: rbcp.y-to,
                 evented:false,
                 fontSize:BD*2,
               });
