@@ -102,10 +102,10 @@
       <canvas id="canvas" style="border:1px solid #000000"></canvas>
       <div id="panel">
 
-        <input type="range" value="145" min="135" max="150" step="0.1" oninput="this.nextElementSibling.value = this.value">
-        <input width="200" id="BALLS_ANGLE">145</input> BA
+        <input type="range" value="145" min="135" max="150" step="0.1" oninput="this.nextElementSibling.value = this.value"/>
+        <input id="BALLS_ANGLE" size="2"/> BA<br/>
 
-        <input type="button" id="SAVE" value="SAVE">
+        <input type="button" id="SAVE" value="SAVE"/>
 
       </div>
     </div>
@@ -314,12 +314,10 @@
           document.getElementById('panel').addEventListener('input', ()=>{update_lines();});
           
           function update_lines()
-          {
-            const BA = degreesToRads(parseFloat(document.getElementById('BALLS_ANGLE').value));
-
-            console.log(document.getElementById('BALLS_ANGLE').value);
-
+          {            
             clearGlist();
+
+            const BA = degreesToRads(parseFloat(document.getElementById('BALLS_ANGLE').value));
 
             const bcp = ball.getCenterPoint();
 
