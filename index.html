@@ -103,7 +103,10 @@
       <div id="panel">
 
         <input type="range" value="145" min="135" max="150" step="0.1" oninput="this.nextElementSibling.value = this.value"/>
-        <input id="BALLS_ANGLE" size="2"/> BA<br/>
+        <input id="BALLS_ANGLE" size="1"/> BA<br/>
+
+        <input type="range" value="0" min="0" max="2" step="0.1" oninput="this.nextElementSibling.value = this.value"/>
+        <input id="BALLS_OFFSET" size="1"/> BO<br/>
 
         <input type="button" id="SAVE" value="SAVE"/>
 
@@ -164,6 +167,7 @@
         if( !sessionStorage.ballsD ) sessionStorage.ballsD = 6.8;
         if( !sessionStorage.pocketD ) sessionStorage.pocketD = 7.2;
         if( !sessionStorage.ballsAngle ) sessionStorage.ballsAngle = 145;
+        if( !sessionStorage.ballsOffset ) sessionStorage.ballsOffset = 0;
  
         // load older settings
         document.getElementById('FACTOR').value = sessionStorage.factor;
@@ -172,6 +176,7 @@
         document.getElementById('POCKET_D').value = sessionStorage.pocketD;
 
         document.getElementById('BALLS_ANGLE').value = sessionStorage.ballsAngle;
+        document.getElementById('BALLS_OFFSET').value = sessionStorage.ballsOffset;
 
         const TSIZE_DICT =
         {
@@ -195,6 +200,7 @@
           sessionStorage.ballsD = document.getElementById('BALLS_D').value;
           sessionStorage.pocketD = document.getElementById('POCKET_D').value;
           sessionStorage.ballsAngle = document.getElementById('BALLS_ANGLE').value;
+          sessionStorage.ballsOffset = document.getElementById('BALLS_OFFSET').value;
         }
 
         document.getElementById('OK').addEventListener("click", ()=>
@@ -310,7 +316,7 @@
 
           ball.on('moving',update_lines);
           rball.on('moving',update_lines);
-          removeEventListener('input', document.getElementById('panel'));
+          //removeEventListener('input', document.getElementById('panel'));
           document.getElementById('panel').addEventListener('input', ()=>{update_lines();});
           
           function update_lines()
@@ -318,6 +324,7 @@
             clearGlist();
 
             const BA = degreesToRads(parseFloat(document.getElementById('BALLS_ANGLE').value));
+            const BO = parseFloat(document.getElementById('BALLS_OFFSET').value);
 
             const bcp = ball.getCenterPoint();
 
@@ -435,8 +442,8 @@
             var cdist = Math.sqrt(sqcdist);
             var a = Math.asin(BD/2/cdist);
             var rota = Math.asin(rby/rbx);
-            // TODO? rotate coords and then back
             
+            // rotate coords and then back            
             //console.log(1,rbx,rby, cdist);
             [rbx,rby] = rotate(0,0,rbx,rby,radsToDegrees(rota));
             //console.log(2,rbx,rby);
@@ -450,7 +457,10 @@
             py = BD/2*Math.cos(a);
             py2 = -py;
 
-            //console.log('before', px, py, BD/2);
+            // add some offset by x
+            //console.log(BO, BD);
+            //px += BO*BD;
+            //px2 += BO*BD;
 
             // rotate back
             [px,py] = rotate(0,0,px,py,-radsToDegrees(rota));
@@ -521,7 +531,7 @@
 
 
             // two intersect to pocket lines
-            var res1 = inteceptCircleLineSeg({radius : BD, center : {x:bcp.x,y:bcp.y}},{p1 : {x:x1,y:y11},p2 : {x:x2,y:y12}});
+            var res1 = inteceptCircleLineSeg({radius : BD+BO*BD, center : {x:bcp.x,y:bcp.y}},{p1 : {x:x1,y:y11},p2 : {x:x2,y:y12}});
             if( !res1.length ) return;
             if( res1.length > 1 ) res1[0] = res1[1];
 
@@ -550,7 +560,7 @@
             }
 
 
-            var res2 = inteceptCircleLineSeg({radius : BD, center : {x:bcp.x,y:bcp.y}},{p1 : {x:x1,y:y21},p2 : {x:x2,y:y22}});
+            var res2 = inteceptCircleLineSeg({radius : BD+BO*BD, center : {x:bcp.x,y:bcp.y}},{p1 : {x:x1,y:y21},p2 : {x:x2,y:y22}});
             if( !res2.length ) return;
             if( res2.length > 1 ) res2[0] = res2[1];
 
