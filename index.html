@@ -45,11 +45,6 @@
       </tr>
 
       <tr>
-      <td><label style="color:white">Balls Angle</label></td>
-      <td><input type="number" id="BALLS_ANGLE"></td>
-      </tr>
-
-      <tr>
       <td></td>
       <td><input type="button" id="OK" value="OK"></td>
       </tr>
@@ -103,7 +98,17 @@
 </head>
 
 <body>
-    <canvas id="canvas" style="border:1px solid #000000"></canvas>
+    <div style="display: flex;">
+      <canvas id="canvas" style="border:1px solid #000000"></canvas>
+      <div id="panel">
+
+        <input type="range" value="145" min="135" max="150" step="0.1" oninput="this.nextElementSibling.value = this.value">
+        <input width="200" id="BALLS_ANGLE">145</input> BA
+
+        <input type="button" id="SAVE" value="SAVE">
+
+      </div>
+    </div>
     <script>
 
         const degreesToRads = deg => (deg * Math.PI) / 180.0;
@@ -165,6 +170,7 @@
         document.getElementById('TABLE_HEIGHT').value = sessionStorage.tableHeight;
         document.getElementById('BALLS_D').value = sessionStorage.ballsD;
         document.getElementById('POCKET_D').value = sessionStorage.pocketD;
+
         document.getElementById('BALLS_ANGLE').value = sessionStorage.ballsAngle;
 
         const TSIZE_DICT =
@@ -181,7 +187,7 @@
         });
 
 
-        document.getElementById('OK').addEventListener("click", ()=>
+        function saveSettings()
         {
           // save all settings
           sessionStorage.factor = document.getElementById('FACTOR').value;
@@ -189,25 +195,22 @@
           sessionStorage.ballsD = document.getElementById('BALLS_D').value;
           sessionStorage.pocketD = document.getElementById('POCKET_D').value;
           sessionStorage.ballsAngle = document.getElementById('BALLS_ANGLE').value;
+        }
 
-          // and repaint with new settings
+        document.getElementById('OK').addEventListener("click", ()=>
+        {
+          saveSettings();
+          // repaint canvas
           repaint();
         });
 
-        var canvas;
+        // just save settings
+        document.getElementById('SAVE').addEventListener("click", ()=>{ saveSettings(); });
 
-        /*(function () {
-          var defaultOnTouchStartHandler = fabric.Canvas.prototype._onTouchStart;
-          Object.assign(fabric.Canvas.prototype, {
-            _onTouchStart: function (e) {
-              var target = this.findTarget(e);
-              if (this.allowTouchScrolling && !target && !this.isDrawingMode) {
-                return;
-              }
-              defaultOnTouchStartHandler.call(this, e);
-            }
-          });
-        })();*/
+        var canvas;
+        var glist = [];
+
+        function clearGlist() { for( g of glist) canvas.remove(g); glist = [];}
 
         function repaint()
         {
@@ -218,10 +221,10 @@
           const TW = TH*2;
           const BD = parseFloat(sessionStorage.ballsD)*F;
           const PD = parseFloat(sessionStorage.pocketD)*F;
-          const BA = degreesToRads(parseInt(sessionStorage.ballsAngle));
 
           document.getElementById('canvas').width = TW;
           document.getElementById('canvas').height = TH;
+          document.getElementById('panel').width = TW*3/4;
           
           canvas = new fabric.Canvas('canvas',
           {
@@ -307,13 +310,16 @@
 
           ball.on('moving',update_lines);
           rball.on('moving',update_lines);
-
-          var glist = [];
+          removeEventListener('input', document.getElementById('panel'));
+          document.getElementById('panel').addEventListener('input', ()=>{update_lines();});
           
           function update_lines()
           {
-            for( g of glist) canvas.remove(g);
-            glist = [];
+            const BA = degreesToRads(parseFloat(document.getElementById('BALLS_ANGLE').value));
+
+            console.log(document.getElementById('BALLS_ANGLE').value);
+
+            clearGlist();
 
             const bcp = ball.getCenterPoint();
 
