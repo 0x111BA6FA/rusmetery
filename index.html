@@ -271,7 +271,7 @@
 
         // canvas and displayed ibjects to delete on update
         var canvas, ball, rball;
-        var F,TW,TH,BD,PD;
+        var F,TW,TH,BD,PD,BA,BO;
         var glist = [];
         function clearGlist() { for( g of glist) canvas.remove(g); glist = [];}
 
@@ -368,6 +368,31 @@
             }
             canvas.fire('object:moving');
           }
+        }
+
+        function calc_points(bcp, rbcp)
+        {
+          // get ball tangent point from red ball position to get cue line
+          const tangent = tangent2Cirle(rbcp, bcp, BD/2);
+          // intersect cue line w offsetted circle
+          inter = inteceptCircleLineSeg({radius : BD+BO*BD, center : {x:bcp.x,y:bcp.y}},{p1 : rbcp,p2 : tangent});
+          if( inter.length > 1 ) inter[0] = inter[1];
+          inter = inter[0];
+
+          // to res[0] coords
+          rbx = rbcp.x - inter.x
+          rby = rbcp.y - inter.y
+
+          a = Math.atan2(rby,rbx);
+          a -= BA;
+          x = -inter.x;
+          y = Math.tan(a)*x;
+
+          // to canvas from res[0] coords
+          x += inter.x;
+          y += inter.y;
+
+          return [tangent, inter, {x:x,y:y}];
         }
 
         function calc_rb()
@@ -487,8 +512,8 @@
         {
           clearGlist();
 
-          const BA = degreesToRads(parseFloat(document.getElementById('BALLS_ANGLE').value));
-          const BO = parseFloat(document.getElementById('BALLS_OFFSET').value);
+          BA = degreesToRads(parseFloat(document.getElementById('BALLS_ANGLE').value));
+          BO = parseFloat(document.getElementById('BALLS_OFFSET').value);
 
           const bcp = ball.getCenterPoint();          
           const rbcp = rball.getCenterPoint();
@@ -585,12 +610,8 @@
             glist.push(text);
           }
 
-          // get ball tangent point from red ball position to get cue line
-          const tangent = tangent2Cirle(rbcp, bcp, BD/2);
-          // intersect cue line w offsetted circle
-          inter = inteceptCircleLineSeg({radius : BD+BO*BD, center : {x:bcp.x,y:bcp.y}},{p1 : rbcp,p2 : tangent});
-          if( inter.length > 1 ) inter[0] = inter[1];
-          inter = inter[0];
+          // calc current ball points and lines
+          [tangent, inter, x0] = calc_points(bcp, rbcp);
 
 
           // tangent line
@@ -603,31 +624,15 @@
           canvas.add(sline);
           glist.push(sline);
 
-          
-          // intersect line
+
+          // line to x0
+          sline = new fabric.Line([inter.x, inter.y, x0.x, x0.y],
           {
-            // to res[0] coords
-            rbx = rbcp.x - inter.x
-            rby = rbcp.y - inter.y
-
-            a = Math.atan2(rby,rbx);
-            a -= BA;
-            x = -TW;
-            y = Math.tan(a)*x;
-
-            // to canvas from res[0] coords
-            x += inter.x;
-            y += inter.y
-
-            // TODO? phantom ball on the intersect point
-            sline = new fabric.Line([inter.x, inter.y, x, y],
-            {
-              stroke:'black',
-              evented:false,
-            });
-            canvas.add(sline);
-            glist.push(sline);
-          }
+            stroke:'black',
+            evented:false,
+          });
+          canvas.add(sline);
+          glist.push(sline);
         };
         
 
