@@ -398,6 +398,42 @@
         function calc_rb()
         {
           // calculate red ball position to score svoyak
+
+          const bcp = ball.getCenterPoint();
+          
+          hy_min = 0;
+          hy_max = TH;
+          loop = 0;
+          do
+          {
+            [_, _, p1] = calc_points(bcp, {x:TW*3/4,y:hy_min});
+            [_, _, p2] = calc_points(bcp, {x:TW*3/4,y:hy_max});
+            if( p1.y*p2.y > 0 ) break;
+
+            // p1 > 0
+            // p2 < 0
+
+            y0range = p1.y-p2.y;
+            hrange = hy_max-hy_min;
+            res = Math.abs(p1.y) > Math.abs(p2.y)? hy_max-p1.y/y0range*hrange : hy_min+p1.y/y0range*hrange;
+
+            [_, _, p3] = calc_points(bcp, {x:TW*3/4,y:res});
+
+            if( Math.abs(p3.y) < 0.5 ) break;
+
+            if( p3.y < 0 ) hy_max = res;
+            else hy_min = res;
+
+            //console.log(hy_min, hy_max, res);
+            //console.log(p1,p2,p3);
+            //console.log(p3.y);
+
+          } while(++loop < 100);
+
+          // set rball to result point
+          rball.top=bcp2tl(res);
+          rball.left=bcp2tl(TW*3/4);
+          canvas.fire('object:moving')
         }
 
         function repaint()
