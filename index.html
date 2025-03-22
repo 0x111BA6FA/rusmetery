@@ -122,7 +122,7 @@
         <input type="button" style="height:40px;width:40px" id="BALL_P1" value="1" onclick="inc_ball(1)">
         <br/>
 
-        <div onchange="canvas.fire('object:moving')">
+        <div onchange="canvas.fire('object:moving'); ball.fire('moving');">
         <br/>
         X<input id="BX" size="1" onchange="ball.left=bcp2tl(orig_point(0)[0] + parseFloat(this.value)*F);"/>
         <input id="RBX" size="1" onchange="rball.left=bcp2tl(orig_point(1)[0] + parseFloat(this.value)*F);" style="color:red;"/><br/>
@@ -130,6 +130,9 @@
         <input id="RBY" size="1" onchange="rball.top=bcp2tl(orig_point(1)[1] + parseFloat(this.value)*F);" style="color:red;"/><br/>        
         <br/>
         </div>
+
+        <input type="checkbox" id="AUTO"/>Auto calc
+        <br/>
 
         <br/>
         <input type="button" id="SAVE" value="SAVE"/>
@@ -367,6 +370,7 @@
               b.left += pmk*i*F;
             }
             canvas.fire('object:moving');
+            ball.fire('moving');
           }
         }
 
@@ -428,7 +432,7 @@
             //console.log(p1,p2,p3);
             //console.log(p3.y);
 
-          } while(++loop < 100);
+          } while(++loop < 20);
 
           // set rball to result point
           rball.top=bcp2tl(res);
@@ -537,7 +541,8 @@
           //ball.on('moving',update_lines);
           //rball.on('moving',update_lines);
           canvas.on('object:moving', update_lines);
-          //canvas.on('object:modified', update_lines);
+          ball.on('moving', ()=>{if( document.getElementById('AUTO').checked ) calc_rb();});
+          //canvas.on('object:modified', ()=>{if( document.getElementById('AUTO').checked ) calc_rb();});
           //removeEventListener('input', document.getElementById('panel'));
           document.getElementById('panel_sliders').addEventListener('input', ()=>{update_lines();});
 
