@@ -1,6 +1,8 @@
 <html>
 <head>
   <script src="https://cdn.jsdelivr.net/npm/fabric@latest/dist/index.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/default-passive-events"></script>
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
   <div class="topnav">
@@ -103,13 +105,14 @@
       <div id="panel">
 
         <input type="range" value="145" min="135" max="150" step="0.1" oninput="this.nextElementSibling.value = this.value"/>
-        <input id="BALLS_ANGLE" size="1"/> BA<br/>
+        <input id="BALLS_ANGLE" size="1" onchange="this.previousElementSibling.value = this.value"/> BA<br/>
 
         <input type="range" value="0" min="0" max="2" step="0.1" oninput="this.nextElementSibling.value = this.value"/>
-        <input id="BALLS_OFFSET" size="1"/> BO<br/>
+        <input id="BALLS_OFFSET" size="1" onchange="this.previousElementSibling.value = this.value"/> BO<br/>
 
         <br/>
         <input type="button" style="height:40px;width:40px" id="CURRENT_BALL" value="O"  onclick="this.cb=(this.cb+1)&1;cb_switch()">
+        <input type="button" style="height:40px;width:40px" id="ORIG_POINT" value="O"  onclick="this.op+=document.getElementById('CURRENT_BALL').cb? 10 : 1;op_switch()">
         <input type="button" style="height:40px;width:40px" id="RESET_BALL" value="R" onclick="reset_ball(document.getElementById('CURRENT_BALL').cb)">
         <input type="button" style="height:40px;width:40px" id="BALL_XY" onclick="this.xy=(this.xy+1)&1;xy_switch()">
         <input type="button" style="height:40px;width:40px" id="PLUS_MINUS" onclick="this.pm=(this.pm+1)&1;pm_switch()">
@@ -117,15 +120,12 @@
         <input type="button" style="height:40px;width:40px" id="BALL_P1" value="1" onclick="inc_ball(1)">
         <br/>
 
-        <div>
-
+        <div onchange="canvas.fire('object:moving')">
         <br/>
-        X<input id="BX" size="1" onchange="ball.left=bcp2tl(parseFloat(this.value)*F); console.log(parseFloat(this.value)*F); ball.fire('moving');"/>
+        X<input id="BX" size="1" onchange="ball.left=bcp2tl(parseFloat(this.value)*F);"/>
         <input id="RBX" size="1" style="color:red;"/><br/>
-
         Y<input id="BY" size="1"/>
-        <input id="RBY" size="1" style="color:red;"/><br/>
-        
+        <input id="RBY" size="1" style="color:red;"/><br/>        
         <br/>
         </div>
 
@@ -200,7 +200,9 @@
         document.getElementById('POCKET_D').value = sessionStorage.pocketD;
 
         document.getElementById('BALLS_ANGLE').value = sessionStorage.ballsAngle;
+        document.getElementById('BALLS_ANGLE').onchange();
         document.getElementById('BALLS_OFFSET').value = sessionStorage.ballsOffset;
+        document.getElementById('BALLS_OFFSET').onchange();
 
         const TSIZE_DICT =
         {
@@ -254,6 +256,16 @@
           };
           cb_switch();
 
+          document.getElementById('ORIG_POINT').op = 3;
+          function op_switch()
+          {
+            ope = document.getElementById('ORIG_POINT');
+            const clist = ['white', 'red'];
+            cbe.style.background = clist[cbe.cb];
+          };
+          op_switch();
+
+
           document.getElementById('BALL_XY').xy = 0;
           function xy_switch()
           {
@@ -278,14 +290,14 @@
             {
               ball.top = bcp2tl(TH/2);
               ball.left = bcp2tl(TW/4);
-              ball.fire('moving');
             }
             else
             {
               rball.top = bcp2tl(TH/2);
               rball.left = bcp2tl(TW/4*3);
-              rball.fire('moving');
             }
+
+            canvas.fire('object:moving');
           }
 
           function inc_ball(i)
@@ -300,7 +312,7 @@
             {
               b.left += pmk*i*F;
             }
-            b.fire('moving');
+            canvas.fire('object:moving');
           }
         }
 
@@ -402,31 +414,14 @@
           canvas.add(rball);
           reset_ball(1);
 
-          ball.on('moving',update_lines);
-          rball.on('moving',update_lines);
-          //canvas.on('object:moving', update_lines);
+          //ball.on('moving',update_lines);
+          //rball.on('moving',update_lines);
+          canvas.on('object:moving', update_lines);
           //canvas.on('object:modified', update_lines);
           //removeEventListener('input', document.getElementById('panel'));
           document.getElementById('panel').addEventListener('input', ()=>{update_lines();});
 
           update_lines();
-        }
-
-        function origination_point(p)
-        {
-          if( p.x <= 3/8*TW )
-          {
-            if( p.y < TH/4 ) return [0, 0, 'P1'];
-            else if ( p.y > TH*3/4 ) return [0, TH, 'P1'];
-            else return [TW/4, TH/2, 'P'];
-          }
-          else if( 3/8*TW <= p.x && p.x <= 5/8*TW )
-          {
-            if( p.y < TH/4 ) return [TW/2, 0, 'P2'];
-            else if ( p.y > TH*3/4 ) return [TW/2, TH, 'P2'];
-            else return [TW/2, TH/2, 'C'];
-          }
-          else return [TW*3/4, TH/2, 'H'];
         }
 
         function update_lines()
@@ -498,6 +493,23 @@
           // text metrics
           if( 1 )
           {
+            function origination_point(p)
+            {
+              if( p.x <= 3/8*TW )
+              {
+                if( p.y < TH/4 ) return [0, 0, 'P1'];
+                else if ( p.y > TH*3/4 ) return [0, TH, 'P1'];
+                else return [TW/4, TH/2, 'P'];
+              }
+              else if( 3/8*TW <= p.x && p.x <= 5/8*TW )
+              {
+                if( p.y < TH/4 ) return [TW/2, 0, 'P2'];
+                else if ( p.y > TH*3/4 ) return [TW/2, TH, 'P2'];
+                else return [TW/2, TH/2, 'C'];
+              }
+              else return [TW*3/4, TH/2, 'H'];
+            }
+
             [mx, my, label] = origination_point(bcp);
             to = (bcp.y > TH*3/4)? 5*BD : BD;
             var text = new fabric.Text(
