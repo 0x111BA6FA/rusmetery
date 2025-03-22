@@ -102,13 +102,15 @@
 <body>
     <div style="display: flex;">
       <canvas id="canvas" style="border:1px solid #000000"></canvas>
-      <div id="panel">
+      <div>
 
+        <div id="panel_sliders">
         <input type="range" value="145" min="135" max="150" step="0.1" oninput="this.nextElementSibling.value = this.value"/>
         <input id="BALLS_ANGLE" size="1" onchange="this.previousElementSibling.value = this.value"/> BA<br/>
 
         <input type="range" value="0" min="0" max="2" step="0.1" oninput="this.nextElementSibling.value = this.value"/>
         <input id="BALLS_OFFSET" size="1" onchange="this.previousElementSibling.value = this.value"/> BO<br/>
+        </div>
 
         <br/>
         <input type="button" style="height:40px;width:40px" id="CURRENT_BALL" value="O"  onclick="this.cb=(this.cb+1)&1;cb_switch()">
@@ -122,10 +124,10 @@
 
         <div onchange="canvas.fire('object:moving')">
         <br/>
-        X<input id="BX" size="1" onchange="ball.left=bcp2tl(parseFloat(this.value)*F);"/>
-        <input id="RBX" size="1" style="color:red;"/><br/>
-        Y<input id="BY" size="1"/>
-        <input id="RBY" size="1" style="color:red;"/><br/>        
+        X<input id="BX" size="1" onchange="ball.left=bcp2tl(orig_point(0)[0] + parseFloat(this.value)*F);"/>
+        <input id="RBX" size="1" onchange="rball.left=bcp2tl(orig_point(1)[0] + parseFloat(this.value)*F);" style="color:red;"/><br/>
+        Y<input id="BY" size="1" onchange="ball.top=bcp2tl(orig_point(0)[1] + parseFloat(this.value)*F);"/>
+        <input id="RBY" size="1" onchange="rball.top=bcp2tl(orig_point(1)[1] + parseFloat(this.value)*F);" style="color:red;"/><br/>        
         <br/>
         </div>
 
@@ -246,6 +248,21 @@
         var glist = [];
         function clearGlist() { for( g of glist) canvas.remove(g); glist = [];}
 
+        function orig_point(b_index)
+        {
+          const oplist =
+          [
+            [TW/4, TH/2],//'P':
+            [0, 0],//'PC':
+            [TW/2, 0],//'PM':
+            [TW*3/4, TH/2],//'H':
+            [TW/2, TH/2],//'C':
+          ];
+          
+          op = document.getElementById('ORIG_POINT').op;
+          return oplist[b_index? Math.floor(op/10) % oplist.length : (op%10) % oplist.length ];
+        }
+
         {
           // init control buttons
           document.getElementById('CURRENT_BALL').cb = 0;
@@ -338,7 +355,7 @@
 
           document.getElementById('canvas').width = TW;
           document.getElementById('canvas').height = TH;
-          document.getElementById('panel').width = TW*3/4;
+          document.getElementById('panel_sliders').width = TW*3/4;
           
           canvas = new fabric.Canvas('canvas',
           {
@@ -429,7 +446,7 @@
           canvas.on('object:moving', update_lines);
           //canvas.on('object:modified', update_lines);
           //removeEventListener('input', document.getElementById('panel'));
-          document.getElementById('panel').addEventListener('input', ()=>{update_lines();});
+          document.getElementById('panel_sliders').addEventListener('input', ()=>{update_lines();});
 
           update_lines();
         }
@@ -503,17 +520,7 @@
           // text metrics
           if( 1 )
           {
-            const oplist =
-            [
-              [TW/4, TH/2],//'P':
-              [0, 0],//'PC':
-              [TW/2, 0],//'PM':
-              [TW*3/4, TH/2],//'H':
-              [TW/2, TH/2],//'C':
-            ];
-
-            op = document.getElementById('ORIG_POINT').op;
-            [mx, my] = oplist[(op%10) % oplist.length];
+            [mx, my] = orig_point(0);
             to = (bcp.y > TH*3/4)? 5*BD : BD;
             var text = new fabric.Text(
                 'X: '+((bcp.x-mx)/F).toFixed(1)+' (' + ((bcp.x-mx)/BD).toFixed(1) + ')' +
@@ -526,11 +533,15 @@
             });
             canvas.add(text);
             glist.push(text);
+            {
+              document.getElementById('BX').value = ((bcp.x-mx)/F).toFixed(1);
+              document.getElementById('BY').value = ((bcp.y-my)/F).toFixed(1);
+            }
 
-            [mx, my] = oplist[Math.floor(op/10) % oplist.length];
+            [mx, my] = orig_point(1);
             to = (rbcp.y > TH*3/4)? 5*BD : BD;
             text = new fabric.Text(
-                'X: '+((rbcp.x-mx)/2).toFixed(1)+' (' + ((rbcp.x-mx)/BD).toFixed(1) + ')' +
+                'X: '+((rbcp.x-mx)/F).toFixed(1)+' (' + ((rbcp.x-mx)/BD).toFixed(1) + ')' +
                 '\nY: '+((rbcp.y-my)/F).toFixed(1)+' (' + ((rbcp.y-my)/BD).toFixed(1) + ')',
             {
               left: rbcp.x+BD,
@@ -540,6 +551,10 @@
             });
             canvas.add(text);
             glist.push(text);
+            {              
+              document.getElementById('RBX').value = ((rbcp.x-mx)/F).toFixed(1);
+              document.getElementById('RBY').value = ((rbcp.y-my)/F).toFixed(1);              
+            }
           }
 
 
@@ -695,23 +710,6 @@
             canvas.add(sline);
             glist.push(sline);
           }
-
-
-          //console.log(b.getCenterPoint());
-          //console.log(rbx, rby, px, py);
-          
-          
-          /*var point = new fabric.Line([ball.left, ball.top, ball.left+EPS, ball.top+EPS],
-          {
-            stroke:'black',
-            evented:false,
-          });
-          glist.push(point);
-          canvas.add(point);*/
-
-          //console.log(ball);
-          //console.log(ball.top);
-          //console.log(bcp.x, bcp.y);
         };
         
 
