@@ -112,8 +112,8 @@
 
         <br/>
         <input type="button" style="height:40px;width:40px" id="CURRENT_BALL" value="O"  onclick="this.cb=(this.cb+1)&1;cb_switch()">
-        <input type="button" style="height:40px;width:40px" id="ORIG_POINT" value="O"  onclick="this.op+=document.getElementById('CURRENT_BALL').cb? 10 : 1;op_switch()">
-        <input type="button" style="height:40px;width:40px" id="RESET_BALL" value="R" onclick="reset_ball(document.getElementById('CURRENT_BALL').cb)">
+        <input type="button" style="height:40px;width:40px" id="ORIG_POINT" value="O"  onclick="this.op+=cb_index()? 10 : 1;op_switch()">
+        <input type="button" style="height:40px;width:40px" id="RESET_BALL" value="R" onclick="reset_ball(cb_index())">
         <input type="button" style="height:40px;width:40px" id="BALL_XY" onclick="this.xy=(this.xy+1)&1;xy_switch()">
         <input type="button" style="height:40px;width:40px" id="PLUS_MINUS" onclick="this.pm=(this.pm+1)&1;pm_switch()">
         <input type="button" style="height:40px;width:40px" id="BALL_P5" value="5" onclick="inc_ball(5)">
@@ -184,6 +184,7 @@
         }
         
         function bcp2tl(x){return x-BD/2}
+        function cb_index(){return document.getElementById('CURRENT_BALL').cb}
 
         // init first time
         if( !sessionStorage.factor ) sessionStorage.factor = 2;
@@ -253,15 +254,22 @@
             cbe = document.getElementById('CURRENT_BALL')
             const clist = ['white', 'red'];
             cbe.style.background = clist[cbe.cb];
+
+            // after chaniging ball - change op switch
+            op_switch();
           };
           cb_switch();
 
-          document.getElementById('ORIG_POINT').op = 3;
+          document.getElementById('ORIG_POINT').op = 30;
           function op_switch()
-          {
+          {            
+            const oplist = ['P', 'PC', 'PM', 'H'];
             ope = document.getElementById('ORIG_POINT');
-            const clist = ['white', 'red'];
-            cbe.style.background = clist[cbe.cb];
+            bop = (ope.op % 10) % oplist.length;
+            rbop = Math.floor(ope.op / 10) % oplist.length;
+            ope.op = bop + 10*rbop;
+            
+            ope.value = oplist[cb_index()?rbop:bop];
           };
           op_switch();
 
@@ -302,7 +310,7 @@
 
           function inc_ball(i)
           {
-            b = document.getElementById('CURRENT_BALL').cb? rball : ball;
+            b = cb_index()? rball : ball;
             pmk = document.getElementById('PLUS_MINUS').pm? -1 : 1;
             if( document.getElementById('BALL_XY').xy )
             {
