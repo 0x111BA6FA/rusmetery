@@ -108,6 +108,11 @@
         <input type="range" value="0" min="0" max="2" step="0.1" oninput="this.nextElementSibling.value = this.value"/>
         <input id="BALLS_OFFSET" size="1"/> BO<br/>
 
+        <br/>
+        <input type="button" id="CURRENT_BALL" value="O" style="height:60px;width:60px" onclick="this.cb = (this.cb + 1) & 1; cb_switch()">
+        <br/>
+
+        <br/>
         <input type="button" id="SAVE" value="SAVE"/>
 
       </div>
@@ -213,10 +218,20 @@
         // just save settings
         document.getElementById('SAVE').addEventListener("click", ()=>{ saveSettings(); });
 
+        // canvas and displayed ibjects to delete on update
         var canvas;
         var glist = [];
-
         function clearGlist() { for( g of glist) canvas.remove(g); glist = [];}
+
+        // init control buttons
+        document.getElementById('CURRENT_BALL').cb = 0;
+        function cb_switch()
+        {
+          cbe = document.getElementById('CURRENT_BALL')
+          const clist = ['white', 'red'];
+          cbe.style.background = clist[cbe.cb];
+        };
+        cb_switch();
 
         function repaint()
         {
