@@ -272,9 +272,21 @@
               rball.left = TW/4*3-BD/2;
               rball.fire('moving');
             }
+          }
 
-            //canvas.renderAll();
-            //if( glist.length ) update_lines();
+          function inc_ball(i)
+          {
+            b = document.getElementById('CURRENT_BALL').cb? rball : ball;
+            pmk = document.getElementById('PLUS_MINUS').pm? -1 : 1;
+            if( document.getElementById('BALL_XY').xy )
+            {
+              b.top += pmk*i*F;
+            }
+            else
+            {
+              b.left += pmk*i*F;
+            }
+            b.fire('moving');
           }
         }
 
