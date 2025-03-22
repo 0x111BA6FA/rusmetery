@@ -117,6 +117,18 @@
         <input type="button" style="height:40px;width:40px" id="BALL_P1" value="1" onclick="inc_ball(1)">
         <br/>
 
+        <div>
+
+        <br/>
+        X<input id="BX" size="1" onchange="ball.left=bcp2tl(parseFloat(this.value)*F); console.log(parseFloat(this.value)*F); ball.fire('moving');"/>
+        <input id="RBX" size="1" style="color:red;"/><br/>
+
+        Y<input id="BY" size="1"/>
+        <input id="RBY" size="1" style="color:red;"/><br/>
+        
+        <br/>
+        </div>
+
         <br/>
         <input type="button" id="SAVE" value="SAVE"/>
 
@@ -171,6 +183,8 @@
           return [nx, ny];
         }
         
+        function bcp2tl(x){return x-BD/2}
+
         // init first time
         if( !sessionStorage.factor ) sessionStorage.factor = 2;
         if( !sessionStorage.tableHeight ) sessionStorage.tableHeight = 175;
@@ -262,14 +276,14 @@
           {
             if( !cb )
             {
-              ball.top = TH/2-BD/2;
-              ball.left = TW/4-BD/2;
+              ball.top = bcp2tl(TH/2);
+              ball.left = bcp2tl(TW/4);
               ball.fire('moving');
             }
             else
             {
-              rball.top = TH/2-BD/2;
-              rball.left = TW/4*3-BD/2;
+              rball.top = bcp2tl(TH/2);
+              rball.left = bcp2tl(TW/4*3);
               rball.fire('moving');
             }
           }
@@ -294,11 +308,11 @@
         {
           if( canvas ) canvas.dispose();
 
-          F = parseInt(sessionStorage.factor);
-          TH = parseFloat(sessionStorage.tableHeight)*F;
+          F = parseInt(document.getElementById('FACTOR').value);
+          TH = parseFloat(document.getElementById('TABLE_HEIGHT').value)*F;
           TW = TH*2;
-          BD = parseFloat(sessionStorage.ballsD)*F;
-          PD = parseFloat(sessionStorage.pocketD)*F;
+          BD = parseFloat(document.getElementById('BALLS_D').value)*F;
+          PD = parseFloat(document.getElementById('POCKET_D'))*F;
 
           document.getElementById('canvas').width = TW;
           document.getElementById('canvas').height = TH;
@@ -365,8 +379,8 @@
           {
             radius: BD/2,
             fill: 'white',
-            top: TH/2-BD/2,
-            left: TW/4-BD/2,
+            top: bcp2tl(TH/2),
+            left: bcp2tl(TW/4),
             strokeWidth:0,
             padding:TW/4,
           });
@@ -379,8 +393,8 @@
           {
             radius: BD/2,
             fill: 'red',
-            top: TH/2-BD/2,
-            left: TW/4*3-BD/2,
+            top: bcp2tl(TH/2),
+            left: bcp2tl(TW/4*3),
             strokeWidth:0,
             padding: TW/4,
           });
@@ -398,6 +412,23 @@
           update_lines();
         }
 
+        function origination_point(p)
+        {
+          if( p.x <= 3/8*TW )
+          {
+            if( p.y < TH/4 ) return [0, 0, 'P1'];
+            else if ( p.y > TH*3/4 ) return [0, TH, 'P1'];
+            else return [TW/4, TH/2, 'P'];
+          }
+          else if( 3/8*TW <= p.x && p.x <= 5/8*TW )
+          {
+            if( p.y < TH/4 ) return [TW/2, 0, 'P2'];
+            else if ( p.y > TH*3/4 ) return [TW/2, TH, 'P2'];
+            else return [TW/2, TH/2, 'C'];
+          }
+          else return [TW*3/4, TH/2, 'H'];
+        }
+
         function update_lines()
         {
           clearGlist();
@@ -413,8 +444,8 @@
             fill: 'rgba(0,0,0,0)',
             stroke: 'black',
             strokeWidth: 1,
-            top:ball.top-BD/2,
-            left:ball.left-BD/2,
+            top:bcp2tl(ball.top),
+            left:bcp2tl(ball.left),
             evented:false,
           });
           canvas.add(doubleRadCircle);
@@ -467,23 +498,6 @@
           // text metrics
           if( 1 )
           {
-            function origination_point(p)
-            {
-              if( p.x <= 3/8*TW )
-              {
-                if( p.y < TH/4 ) return [0, 0, 'P1'];
-                else if ( p.y > TH*3/4 ) return [0, TH, 'P1'];
-                else return [TW/4, TH/2, 'P'];
-              }
-              else if( 3/8*TW <= p.x && p.x <= 5/8*TW )
-              {
-                if( p.y < TH/4 ) return [TW/2, 0, 'P2'];
-                else if ( p.y > TH*3/4 ) return [TW/2, TH, 'P2'];
-                else return [TW/2, TH/2, 'C'];
-              }
-              else return [TW*3/4, TH/2, 'H'];
-            }
-
             [mx, my, label] = origination_point(bcp);
             to = (bcp.y > TH*3/4)? 5*BD : BD;
             var text = new fabric.Text(
