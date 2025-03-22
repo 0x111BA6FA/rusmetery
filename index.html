@@ -263,13 +263,15 @@
           document.getElementById('ORIG_POINT').op = 30;
           function op_switch()
           {            
-            const oplist = ['P', 'PC', 'PM', 'H'];
+            const oplist = ['P','PC','PM','H','C'];
+
             ope = document.getElementById('ORIG_POINT');
             bop = (ope.op % 10) % oplist.length;
             rbop = Math.floor(ope.op / 10) % oplist.length;
             ope.op = bop + 10*rbop;
-            
+
             ope.value = oplist[cb_index()?rbop:bop];
+            if(canvas) canvas.fire('object:moving');
           };
           op_switch();
 
@@ -501,24 +503,17 @@
           // text metrics
           if( 1 )
           {
-            function origination_point(p)
-            {
-              if( p.x <= 3/8*TW )
-              {
-                if( p.y < TH/4 ) return [0, 0, 'P1'];
-                else if ( p.y > TH*3/4 ) return [0, TH, 'P1'];
-                else return [TW/4, TH/2, 'P'];
-              }
-              else if( 3/8*TW <= p.x && p.x <= 5/8*TW )
-              {
-                if( p.y < TH/4 ) return [TW/2, 0, 'P2'];
-                else if ( p.y > TH*3/4 ) return [TW/2, TH, 'P2'];
-                else return [TW/2, TH/2, 'C'];
-              }
-              else return [TW*3/4, TH/2, 'H'];
-            }
+            const oplist =
+            [
+              [TW/4, TH/2],//'P':
+              [0, 0],//'PC':
+              [TW/2, 0],//'PM':
+              [TW*3/4, TH/2],//'H':
+              [TW/2, TH/2],//'C':
+            ];
 
-            [mx, my, label] = origination_point(bcp);
+            op = document.getElementById('ORIG_POINT').op;
+            [mx, my] = oplist[(op%10) % oplist.length];
             to = (bcp.y > TH*3/4)? 5*BD : BD;
             var text = new fabric.Text(
                 'X: '+((bcp.x-mx)/F).toFixed(1)+' (' + ((bcp.x-mx)/BD).toFixed(1) + ')' +
@@ -532,7 +527,7 @@
             canvas.add(text);
             glist.push(text);
 
-            [mx, my, label] = origination_point(rbcp);
+            [mx, my] = oplist[Math.floor(op/10) % oplist.length];
             to = (rbcp.y > TH*3/4)? 5*BD : BD;
             text = new fabric.Text(
                 'X: '+((rbcp.x-mx)/2).toFixed(1)+' (' + ((rbcp.x-mx)/BD).toFixed(1) + ')' +
