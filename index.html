@@ -133,6 +133,7 @@
 
         <br/>
         <input type="button" id="SAVE" value="SAVE"/>
+        <input type="button" value="CALC" onclick="calc_rb()">
 
       </div>
     </div>
@@ -343,6 +344,11 @@
           }
         }
 
+        function calc_rb()
+        {
+          // calculate red ball position to score svoyak
+        }
+
         function repaint()
         {
           if( canvas ) canvas.dispose();
@@ -531,12 +537,10 @@
               evented:false,
               fontSize:BD*2,
             });
+            document.getElementById('BX').value = ((bcp.x-mx)/F).toFixed(1);
+            document.getElementById('BY').value = ((bcp.y-my)/F).toFixed(1);
             canvas.add(text);
             glist.push(text);
-            {
-              document.getElementById('BX').value = ((bcp.x-mx)/F).toFixed(1);
-              document.getElementById('BY').value = ((bcp.y-my)/F).toFixed(1);
-            }
 
             [mx, my] = orig_point(1);
             to = (rbcp.y > TH*3/4)? 5*BD : BD;
@@ -549,12 +553,10 @@
               evented:false,
               fontSize:BD*2,
             });
+            document.getElementById('RBX').value = ((rbcp.x-mx)/F).toFixed(1);
+            document.getElementById('RBY').value = ((rbcp.y-my)/F).toFixed(1);   
             canvas.add(text);
             glist.push(text);
-            {              
-              document.getElementById('RBX').value = ((rbcp.x-mx)/F).toFixed(1);
-              document.getElementById('RBY').value = ((rbcp.y-my)/F).toFixed(1);              
-            }
           }
 
 
