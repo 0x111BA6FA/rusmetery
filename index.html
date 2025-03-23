@@ -125,10 +125,12 @@
         <div onchange="canvas.fire('object:moving'); ball.fire('moving');">
         <br/>
         X<input id="BX" size="1" onchange="ball.left=bcp2tl(orig_point(0)[0] + parseFloat(this.value)*F);"/>
-        <input id="RBX" size="1" onchange="rball.left=bcp2tl(orig_point(1)[0] + parseFloat(this.value)*F);" style="color:red;"/><br/>
+        <input id="RBX" size="1" onchange="rball.left=bcp2tl(orig_point(1)[0] + parseFloat(this.value)*F);" style="color:red;"/>
+        <label id="X0"></label><br/>
+        
         Y<input id="BY" size="1" onchange="ball.top=bcp2tl(orig_point(0)[1] + parseFloat(this.value)*F);"/>
-        <input id="RBY" size="1" onchange="rball.top=bcp2tl(orig_point(1)[1] + parseFloat(this.value)*F);" style="color:red;"/><br/>        
-        <br/>
+        <input id="RBY" size="1" onchange="rball.top=bcp2tl(orig_point(1)[1] + parseFloat(this.value)*F);" style="color:red;"/> 
+        <label id="Y0"></label><br/>
         </div>
 
         <input type="checkbox" id="AUTO"/>Auto calc
@@ -654,6 +656,8 @@
           // calc current ball points and lines
           [tangent, inter, x0] = calc_points(bcp, rbcp);
 
+          document.getElementById('X0').innerHTML = (x0.x/F).toFixed(1);
+          document.getElementById('Y0').innerHTML = (x0.y/F).toFixed(1);
 
           // tangent line
           var sline = new fabric.Line([rbcp.x, rbcp.y, tangent.x, tangent.y],
